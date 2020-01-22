@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<protocol prefix="CAN">
+    <node id="0" name="emergency">
+        <message id="0" name="test" type="int" />
+    </node>
+    <node id="1" name="mission">
+        <message id="0" name="status" type="int" />
+        <message id="1" name="rocket_status" type="int" />
+        <message id="2" name="charge_status" type="int" />
+    </node>
+    <node id="2" name="remote_control">
+        <message id="0" name="status" type="int" />
+        <message id="1" name="sleep" type="int" />
+        <message id="2" name="eject_drogue" type="int" />
+        <message id="3" name="eject_main" type="int" />
+        <message id="4" name="engine_sequence_set" type="int" />
+        <message id="5" name="engine_sequence_start" type="int" />
+        <message id="6" name="engine_sequence_stop" type="int" />
+    </node>
+    <node id="3" name="acquisition">
+        <message id="0" name="status" type="int" />
+        <message id="1" name="air_pressure" type="float" />
+        <message id="2" name="air_temperature" type="float" />
+        <message id="3" name="altitude" type="float" />
+        <message id="4" name="vertical_velocity" type="float" />
+        <message id="5" name="acceleration_x" type="float" />
+        <message id="6" name="acceleration_y" type="float" />
+        <message id="7" name="acceleration_z" type="float" />
+        <message id="8" name="attitude_x" type="float" />
+        <message id="9" name="attitude_y" type="float" />
+        <message id="10" name="attitude_z" type="float" />
+        <message id="11" name="magnetic_field_x" type="float" />
+        <message id="12" name="magnetic_field_y" type="float" />
+        <message id="13" name="magnetic_field_z" type="float" />
+        <message id="14" name="imu_temperature" type="float" />
+        <message id="15" name="gps_lat" type="float" />
+        <message id="16" name="gps_lon" type="float" />
+    </node>
+    <node id="4" name="motherboard">
+        <message id="0" name="status" type="int" />
+        <message id="1" name="3v3_voltage" type="float" />
+        <message id="2" name="3v3_amperage" type="float" />
+        <message id="3" name="5v_voltage" type="float" />
+        <message id="4" name="5v_amperage" type="float" />
+        <message id="5" name="vbatt_voltage" type="float" />
+        <message id="6" name="vbatt_amperage" type="float" />
+    </node>
+    <node id="5" name="communication">
+        <message id="0" name="status" type="int" />
+    </node>
+    <node id="6" name="testbench">
+        <message id="0" name="status" type="int" />
+        <message id="1" name="pressure_1" type="float"/>
+        <message id="2" name="pressure_2" type="float"/>
+        <message id="3" name="pressure_3" type="float"/>
+        <message id="4" name="pressure_4" type="float"/>
+        <message id="5" name="temp_1" type="float"/>
+        <message id="6" name="temp_2" type="float"/>
+        <message id="7" name="temp_3" type="float"/>
+        <message id="8" name="temp_4" type="float"/>
+        <message id="9" name="temp_5" type="float"/>
+        <message id="10" name="temp_6" type="float"/>
+        <message id="11" name="load1" type="float"/>
+        <message id="12" name="load2" type="float"/>
+        <message id="13" name="load3" type="float"/>
+        <message id="14" name="valve1_state" type="float"/>
+        <message id="15" name="valve2_state" type="float"/>
+    </node>
+</protocol>
