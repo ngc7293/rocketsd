@@ -3,8 +3,7 @@
 #include <QTimer>
 
 #include "log.h"
-
-#include <chrono>
+#include "util.h"
 
 CuteDeserializer::CuteDeserializer(ProtocolSP protocol)
     : Deserializer(protocol)
@@ -31,25 +30,28 @@ void CuteDeserializer::deserialize(radio_packet_t packet)
     }
 
     if ((node = (*protocol_)[packet.node]) == nullptr) {
-        Log::err("CuteDeserializer", "Could not find Node with id=" + std::to_string(packet.node) + ": ignoring");
+        Log::err("CuteDeserializer") << "Could not find Node with id=" << packet.node << ": ignoring" << std::endl;
         return;
     }
 
     if ((message = (*node)[packet.message_id]) == nullptr) {
-        Log::err("CuteDeserializer", "Could not find Message with id=" + std::to_string(packet.node) + "for Node '" + std::string(node->name()) + "': ignoring");
+        Log::err("CuteDeserializer") << "Could not find Message with id=" << packet.node << "for Node '" << node->name() << "': ignoring" << std::endl;
         return;
     }
 
     PacketSP cutepacket = std::make_shared<Packet>();
-    cutepacket->set_source(std::string("anirniq.") + std::string(message->name()));
+    cutepacket->set_source(std::string("anirniq.") + std::string(node->name()) + "." + std::string(message->name()));
     cutepacket->set_value(packet.payload.FLOAT);
-    cutepacket->set_timestamp(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+    cutepacket->set_timestamp(now());
 
     dispatch(cutepacket);
 }
 
 void CuteDeserializer::dispatch(PacketSP packet)
 {
+    // TODO: Once protocol is better defined, figure out max possible size of a
+    // packet and make sure it fits in this buffer. As of 2020-02-03 packet size
+    // is 38 bytes.
     void* buffer[512];
     packet->SerializeToArray(buffer, 512);
     socket_->write((char*)buffer, packet->ByteSizeLong());
@@ -62,7 +64,7 @@ void CuteDeserializer::connect()
 
 void CuteDeserializer::onConnected()
 {
-    Log::info("CuteDeserializer", "Connected to CuteStation on /tmp/cute");
+    Log::info("CuteDeserializer") << "Connected to CuteStation on /tmp/cute" << std::endl;
 }
 
 void CuteDeserializer::onError(QLocalSocket::LocalSocketError error)
@@ -77,5 +79,5 @@ void CuteDeserializer::onError(QLocalSocket::LocalSocketError error)
     QObject::connect(timer, &QTimer::timeout, timer, &QTimer::deleteLater);
     timer->start(1000);
 
-    Log::warn("CuteDeserializer", "Could not connect to CuteStation, trying again in 1 sec");
+    Log::warn("CuteDeserializer") << "Could not connect to CuteStation, trying again in 1 sec" << std::endl;
 }

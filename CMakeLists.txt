@@ -9,6 +9,7 @@ set( SOURCES
     shared/interfaces/radio/radio_packet.c
     src/bullshiter.cc
     src/cute_deserializer.cc
+    src/influx_deserializer.cc
     src/deserializer.cc
     src/main.cc
     src/proto/packet.pb.cc
@@ -16,11 +17,13 @@ set( SOURCES
     src/protocol.cc
     src/log.cc
     src/app.cc
+    src/util.cc
 )
 
 SET( HEADERS
     inc/bullshiter.h
     inc/cute_deserializer.h
+    inc/influx_deserializer.h
     inc/deserializer.h
     inc/proto/packet.h
     inc/proto/packet.pb.h
@@ -28,6 +31,7 @@ SET( HEADERS
     inc/protocol.h
     inc/log.h
     inc/app.h
+    inc/util.h
     shared/interfaces/radio/radio_packet.h
     shared/interfaces/id.h
 )

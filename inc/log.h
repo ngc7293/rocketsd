@@ -1,6 +1,7 @@
 #ifndef LOG_H_
 #define LOG_H_
 
+#include <iostream>
 #include <string>
 
 class Log {
@@ -15,15 +16,15 @@ public:
 public:
     static Log& get();
 
-    static void debug(std::string component, std::string message);
-    static void info(std::string component, std::string message);
-    static void warn(std::string component, std::string message);
-    static void err(std::string component, std::string message);
+    static std::ostream& debug(std::string component, std::string message = "");
+    static std::ostream& info(std::string component, std::string message = "");
+    static std::ostream& warn(std::string component, std::string message = "");
+    static std::ostream& err(std::string component, std::string message = "");
 
 public:
     ~Log();
 
-    void log(Level level, std::string component, std::string message);
+    std::ostream& log(Level level, std::string component, std::string message);
 
 private:
     Log();
