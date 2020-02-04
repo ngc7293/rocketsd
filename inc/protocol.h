@@ -1,6 +1,7 @@
 #ifndef PROTOCOL_H_
 #define PROTOCOL_H_
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -58,5 +59,7 @@ public:
     std::unordered_map<int, Node*>::iterator begin() { return nodes_.begin(); }
     std::unordered_map<int, Node*>::iterator end() { return nodes_.end(); }
 };
+
+typedef std::shared_ptr<Protocol> ProtocolSP;
 
 #endif
