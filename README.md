@@ -20,9 +20,7 @@ This project has the following dependencies:
 Additionnally:
 
  - CuteStation
- - InfluxDB listening on its default localhost HTTP port
-
-(Work is ongoing to make these endpoints configurable/enable-able.)
+ - InfluxDB
 
 ## Compiling
 

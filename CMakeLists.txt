@@ -8,9 +8,10 @@ set(CMAKE_AUTORCC ON)
 set( SOURCES
     shared/interfaces/radio/radio_packet.c
     src/bullshiter.cc
-    src/cute_deserializer.cc
-    src/influx_deserializer.cc
-    src/deserializer.cc
+    src/clients/cute_client.cc
+    src/clients/influx_client.cc
+    src/clients/client.cc
+    src/clients/client_factory.cc
     src/main.cc
     src/proto/packet.pb.cc
     src/protocol_parser.cc
@@ -22,9 +23,10 @@ set( SOURCES
 
 SET( HEADERS
     inc/bullshiter.h
-    inc/cute_deserializer.h
-    inc/influx_deserializer.h
-    inc/deserializer.h
+    inc/clients/cute_client.h
+    inc/clients/influx_client.h
+    inc/clients/client.h
+    inc/clients/client_factory.h
     inc/proto/packet.h
     inc/proto/packet.pb.h
     inc/protocol_parser.h

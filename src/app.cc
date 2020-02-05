@@ -1,9 +1,14 @@
 #include "app.h"
 
+#include <fstream>
+
+#include <nlohmann/json.hpp>
+
 #include "protocol_parser.h"
-#include "cute_deserializer.h"
-#include "influx_deserializer.h"
+#include "clients/client_factory.h"
 #include "bullshiter.h"
+
+using json = nlohmann::json;
 
 App::App(int argc, char* argv[])
     : QCoreApplication(argc, argv)
@@ -12,16 +17,18 @@ App::App(int argc, char* argv[])
     protocol_ = ProtocolSP(parser.parse("protocol.xml"));
 
     if (protocol_) {
-        Deserializer* cute = new CuteDeserializer(protocol_);
-        Deserializer* influx = new InfluxDeserializer(protocol_);
-        Bullshiter* bullshiter = new Bullshiter();
+        Bullshiter* bullshit = new Bullshiter();
+        bullshit->setParent(this);
 
-        bullshiter->setParent(this);
-        cute->setParent(this);
-        influx->setParent(this);
+        std::ifstream ifs("config.json");
+        json config = json::parse(ifs);
 
-        connect(bullshiter, &Bullshiter::packetReady, cute, &Deserializer::deserialize);
-        connect(bullshiter, &Bullshiter::packetReady, influx, &Deserializer::deserialize);
+        for (auto& subconfig : config["clients"]) {
+            clients::Client* client = clients::ClientFactory::build(protocol_, subconfig, this);
+            if (client) {
+                connect(bullshit, &Bullshiter::packetReady, client, &clients::Client::handle);
+            }
+        }
     }
 }
 

@@ -1,0 +1,13 @@
+{
+    "clients": [
+        {
+            "client": "cute",
+            "socket": "/tmp/cute"
+        },
+		{
+			"client": "influx",
+			"url": "http://localhost:8086",
+			"buffer_size": 5000
+		}
+    ]
+}
