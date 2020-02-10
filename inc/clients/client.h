@@ -26,6 +26,9 @@ public:
 
 public slots:
     virtual void handle(radio_packet_t packet) = 0;
+
+signals:
+    void packetReady(radio_packet_t packet);
 };
 
 } // namespace

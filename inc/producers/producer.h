@@ -23,6 +23,9 @@ public:
 
     virtual bool init(json& config) = 0;
 
+public slots:
+    virtual void handle(radio_packet_t packet) {}
+
 signals:
     void packetReady(radio_packet_t packet);
 };
