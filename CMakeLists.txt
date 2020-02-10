@@ -7,7 +7,10 @@ set(CMAKE_AUTORCC ON)
 
 set( SOURCES
     shared/interfaces/radio/radio_packet.c
-    src/bullshiter.cc
+    src/producers/producer.cc
+    src/producers/producer_factory.cc
+    src/producers/fake_producer.cc
+    src/producers/serial_producer.cc
     src/clients/cute_client.cc
     src/clients/influx_client.cc
     src/clients/client.cc
@@ -22,7 +25,10 @@ set( SOURCES
 )
 
 SET( HEADERS
-    inc/bullshiter.h
+    inc/producers/fake_producer.h
+    inc/producers/serial_producer.h
+    inc/producers/producer.h
+    inc/producers/producer_factory.h
     inc/clients/cute_client.h
     inc/clients/influx_client.h
     inc/clients/client.h
@@ -44,13 +50,13 @@ endif()
 
 # Qt5
 set (CMAKE_PREFIX_PATH /opt/Qt/5.12.1/gcc_64/)
-find_package(Qt5 COMPONENTS Core Network Xml REQUIRED)
+find_package(Qt5 COMPONENTS Core Network Xml SerialPort REQUIRED)
 
 # Protobuf, for messages
 find_package(Protobuf REQUIRED)
 
 add_executable(rocketsd ${SOURCES} ${HEADERS} ${UI})
 set_property(TARGET rocketsd PROPERTY CXX_STANDARD 17)
-target_link_libraries(rocketsd Qt5::Network Qt5::Xml protobuf::libprotobuf gcov)
+target_link_libraries(rocketsd Qt5::Network Qt5::Xml Qt5::SerialPort protobuf::libprotobuf gcov)
 target_include_directories(rocketsd PRIVATE . inc)
 target_compile_options(rocketsd PRIVATE -Wall -Wpedantic)

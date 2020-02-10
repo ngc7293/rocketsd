@@ -28,6 +28,7 @@ Client* ClientFactory::build(ProtocolSP protocol, json& config, QObject* parent)
     }
 
     if (!client->init(config)) {
+        delete client;
         return nullptr;
     }
 

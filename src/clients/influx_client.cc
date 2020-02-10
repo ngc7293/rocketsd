@@ -59,7 +59,7 @@ void InfluxClient::handle(radio_packet_t packet)
         QNetworkRequest request(QUrl((base_url_ + "/write?db=anirniq").c_str()));
         request.setHeader(QNetworkRequest::KnownHeaders::ContentTypeHeader, "application/x-influx");
         network_->post(request, QByteArray(buffer_.str().c_str()));
-        buffer_.clear();
+        buffer_.str("");
         lines_ = 0;
     }
 }
