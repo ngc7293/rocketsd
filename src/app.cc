@@ -6,9 +6,8 @@
 
 #include <nlohmann/json.hpp>
 
+#include "modules/module_factory.h"
 #include "protocol_parser.h"
-#include "clients/client_factory.h"
-#include "producers/producer_factory.h"
 
 using json = nlohmann::json;
 
@@ -21,26 +20,35 @@ App::App(int argc, char* argv[])
     ProtocolParser parser;
     protocol_ = ProtocolSP(parser.parse("protocol.xml"));
 
-    if (protocol_) {
+    if (!protocol_) {
+        return;
+    }
 
-        std::ifstream ifs("config.json");
-        json config = json::parse(ifs);
+    std::ifstream ifs("config.json");
+    json config = json::parse(ifs);
 
-        producers::Producer* producer = producers::ProducerFactory::build(config["producer"], this);
+    modules::Module* first = nullptr;
 
-        for (auto& subconfig : config["clients"]) {
-            if (clients::Client* client = clients::ClientFactory::build(protocol_, subconfig)) {
-                QThread* thread = new QThread(this);
-                thread->setObjectName("Client thread");
-                client->moveToThread(thread);
-                connect(producer, &producers::Producer::packetReady, client, &clients::Client::handle, Qt::QueuedConnection);
-                connect(thread, &QThread::finished, client, &QObject::deleteLater);
-                thread->start();
-            }
+    for (auto& subconfig : config["modules"]) {
+        modules::Module* module;
+        if (!(module = modules::ModuleFactory::build(protocol_, subconfig))) {
+            continue;
         }
+
+        QThread* thread = new QThread(this);
+        thread->setObjectName(module->type().c_str());
+        module->moveToThread(thread);
+        connect(thread, &QThread::finished, module, &QObject::deleteLater);
+
+        if (first) {
+            connect(first, &modules::Module::packetReady, module, &modules::Module::onPacket, Qt::QueuedConnection);
+            connect(module, &modules::Module::packetReady, first, &modules::Module::onPacket, Qt::QueuedConnection);
+        } else {
+            first = module;
+        }
+
+        thread->start();
     }
 }
 
-App::~App()
-{
-}
+App::~App() {}

@@ -4,44 +4,39 @@ project(rocketsd)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-
 set( SOURCES
     shared/interfaces/radio/radio_packet.c
-    src/producers/producer.cc
-    src/producers/producer_factory.cc
-    src/producers/fake_producer.cc
-    src/producers/serial_producer.cc
-    src/clients/cute_client.cc
-    src/clients/influx_client.cc
-    src/clients/client.cc
-    src/clients/client_factory.cc
+    src/app.cc
+    src/log.cc
     src/main.cc
+    src/modules/cute_module.cc
+    src/modules/fake_module.cc
+    src/modules/influx_module.cc
+    src/modules/module.cc
+    src/modules/module_factory.cc
+    src/modules/serial_module.cc
     src/proto/packet.pb.cc
     src/protocol_parser.cc
     src/protocol.cc
-    src/log.cc
-    src/app.cc
     src/util.cc
 )
 
 SET( HEADERS
-    inc/producers/fake_producer.h
-    inc/producers/serial_producer.h
-    inc/producers/producer.h
-    inc/producers/producer_factory.h
-    inc/clients/cute_client.h
-    inc/clients/influx_client.h
-    inc/clients/client.h
-    inc/clients/client_factory.h
+    inc/app.h
+    inc/log.h
+    inc/modules/cute_module.h
+    inc/modules/fake_module.h
+    inc/modules/influx_module.h
+    inc/modules/module_factory.h
+    inc/modules/module.h
+    inc/modules/serial_module.h
     inc/proto/packet.h
     inc/proto/packet.pb.h
     inc/protocol_parser.h
     inc/protocol.h
-    inc/log.h
-    inc/app.h
     inc/util.h
-    shared/interfaces/radio/radio_packet.h
     shared/interfaces/id.h
+    shared/interfaces/radio/radio_packet.h
 )
 
 if(CMAKE_VERSION VERSION_LESS "3.7.0")
@@ -55,8 +50,11 @@ find_package(Qt5 COMPONENTS Core Network Xml SerialPort REQUIRED)
 # Protobuf, for messages
 find_package(Protobuf REQUIRED)
 
+# Nlohmann JSON, for config
+find_package(nlohmann_json 3.7.0 REQUIRED)
+
 add_executable(rocketsd ${SOURCES} ${HEADERS} ${UI})
 set_property(TARGET rocketsd PROPERTY CXX_STANDARD 17)
-target_link_libraries(rocketsd Qt5::Network Qt5::Xml Qt5::SerialPort protobuf::libprotobuf gcov)
+target_link_libraries(rocketsd Qt5::Network Qt5::Xml Qt5::SerialPort protobuf::libprotobuf gcov nlohmann_json::nlohmann_json)
 target_include_directories(rocketsd PRIVATE . inc)
 target_compile_options(rocketsd PRIVATE -Wall -Wpedantic)

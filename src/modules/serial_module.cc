@@ -1,30 +1,31 @@
-#include "producers/serial_producer.h"
+#include "modules/serial_module.h"
 
 #include "log.h"
+#include "util.h"
 
-namespace producers {
+namespace modules {
 
-SerialProducer::SerialProducer(QObject* parent)
-    : Producer(parent)
+SerialModule::SerialModule(QObject* parent, ProtocolSP protocol)
+    : Module(parent, protocol)
 {
 }
 
-SerialProducer::~SerialProducer()
+SerialModule::~SerialModule()
 {
 }
 
-bool SerialProducer::init(json& config)
+bool SerialModule::init(json& config)
 {
-    Log::info("SerialProducer") << "Successfully init'd Serial producer" << std::endl;
+    Log::info("SerialModule") << "Successfully init'd Serial producer" << std::endl;
 
-    if (!(config.count("port") && config["port"].is_string())) {
-        Log::warn("SerialProducer") << "Missing or invalid configuration 'port'" << std::endl;
+    if (!has_string(config, "port")) {
+        Log::err("SerialModule") << "Missing or invalid configuration 'port'" << std::endl;
         return false;
     }
     std::string port = config["port"].get<std::string>();
 
-    if (!(config.count("baudrate") && config["baudrate"].is_number_unsigned())) {
-        Log::warn("SerialProducer") << "Missing or invalid configuration 'baudrate'" << std::endl;
+    if (!has_uint(config, "baudrate")) {
+        Log::err("SerialModule") << "Missing or invalid configuration 'baudrate'" << std::endl;
         return false;
     }
     unsigned int baudrate = config["baudrate"].get<unsigned int>();
@@ -32,17 +33,17 @@ bool SerialProducer::init(json& config)
     serialport_ = new QSerialPort(port.c_str());
     serialport_->setBaudRate(baudrate);
 
-    connect(serialport_, &QSerialPort::readyRead, this, &SerialProducer::onData);
+    connect(serialport_, &QSerialPort::readyRead, this, &SerialModule::onData);
     return true;
 }
 
-void SerialProducer::handle(radio_packet_t packet)
+void SerialModule::onPacket(radio_packet_t packet)
 {
     //FIXME: This has not been tested whatsoever
     serialport_->write((char*)&packet, sizeof(radio_packet_t));
 }
 
-void SerialProducer::onData()
+void SerialModule::onData()
 {
     //FIXME: This has not been tested whatsoever
     radio_packet_t packet;

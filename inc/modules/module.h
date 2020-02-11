@@ -1,5 +1,5 @@
-#ifndef DESERIALIZER_H_
-#define DESERIALIZER_H_
+#ifndef MODULE_H_
+#define MODULE_H_
 
 #include <QObject>
 
@@ -10,22 +10,24 @@
 
 using json = nlohmann::json;
 
-namespace clients {
+namespace modules {
 
-class Client : public QObject {
+class Module : public QObject {
     Q_OBJECT
 
 protected:
     ProtocolSP protocol_;
 
 public:
-    Client(QObject* parent, ProtocolSP protocol);
-    virtual ~Client();
+    Module(QObject* parent, ProtocolSP protocol);
+    virtual ~Module();
 
     virtual bool init(json& config) = 0;
 
+    virtual std::string type() const = 0;
+
 public slots:
-    virtual void handle(radio_packet_t packet) = 0;
+    virtual void onPacket(radio_packet_t packet) = 0;
 
 signals:
     void packetReady(radio_packet_t packet);

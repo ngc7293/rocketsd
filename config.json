@@ -1,17 +1,17 @@
 {
-    "producer": {
-        "producer": "fake",
-        "frequency": 1000,
-        "alpha": 2,
-        "omega": 1
-    },
-    "clients": [
+    "modules": [
         {
-            "client": "cute",
+            "module": "fake",
+            "frequency": 1000,
+            "alpha": 2,
+            "omega": 1
+        },
+        {
+            "module": "cute",
             "socket": "/tmp/cute"
         },
 		{
-			"client": "influx",
+			"module": "influx",
 			"url": "http://localhost:8086",
 			"buffer_size": 5000
 		}

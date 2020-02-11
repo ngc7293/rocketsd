@@ -1,16 +1,16 @@
-#ifndef INFLUX_CLIENT_H_
-#define INFLUX_CLIENT_H_
+#ifndef INFLUX_MODULE_H_
+#define INFLUX_MODULE_H_
 
-#include "clients/client.h"
+#include "module.h"
 
 #include <sstream>
 
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 
-namespace clients {
+namespace modules {
 
-class InfluxClient : public Client {
+class InfluxModule : public Module {
     Q_OBJECT
 
 private:
@@ -22,14 +22,17 @@ private:
     int lines_;
 
 public:
-    InfluxClient(QObject* parent, ProtocolSP protocol);
-    ~InfluxClient() override;
+    InfluxModule(QObject* parent, ProtocolSP protocol);
+    ~InfluxModule() override;
 
     bool init(json& config) override;
 
-public slots:
-    void handle(radio_packet_t packet) override;
+    std::string type() const override { return "InfluxDB"; }
 
+public slots:
+    void onPacket(radio_packet_t packet) override;
+
+private slots:
     void onError(QNetworkReply* reply);
 };
 

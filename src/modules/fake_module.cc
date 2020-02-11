@@ -1,4 +1,4 @@
-#include "producers/fake_producer.h"
+#include "modules/fake_module.h"
 
 #include <iostream>
 
@@ -7,25 +7,26 @@
 #include "shared/interfaces/id.h"
 
 #include "log.h"
+#include "util.h"
 
-namespace producers {
+namespace modules {
 
-FakeProducer::FakeProducer(QObject* parent)
-    : Producer(parent)
+FakeModule::FakeModule(QObject* parent, ProtocolSP protocol)
+    : Module(parent, protocol)
 {
     timer_ = new QTimer();
-    connect(timer_, &QTimer::timeout, this, &FakeProducer::onTimeout);
+    connect(timer_, &QTimer::timeout, this, &FakeModule::onTimeout);
     n_ = 0;
 }
 
-FakeProducer::~FakeProducer()
+FakeModule::~FakeModule()
 {
 }
 
-bool FakeProducer::init(json& config)
+bool FakeModule::init(json& config)
 {
     freq_ = 0;
-    if (config.count("frequency") && config["frequency"].is_number()) {
+    if (has_float(config, "frequency")) {
         freq_ = config["frequency"].get<double>();
     }
     if (freq_ < 0) {
@@ -33,21 +34,21 @@ bool FakeProducer::init(json& config)
     }
 
     alpha_ = 1;
-    if (config.count("alpha") && config["alpha"].is_number()) {
+    if (has_float(config, "alpha")) {
         alpha_ = config["alpha"].get<double>();
     }
 
     omega_ = 1;
-    if (config.count("omega") && config["omega"].is_number()) {
+    if (has_float(config, "omega")) {
         omega_ = config["omega"].get<double>();
     }
 
     timer_->start(1000 / freq_);
-    Log::info("FakeProducer") << "Successfully init'd Fake producer" << std::endl;
+    Log::info("FakeModule") << "Successfully init'd Fake producer" << std::endl;
     return true;
 }
 
-void FakeProducer::onTimeout()
+void FakeModule::onTimeout()
 {
     radio_packet_t packet;
     packet.node = 3;

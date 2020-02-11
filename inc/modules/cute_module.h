@@ -1,15 +1,15 @@
-#ifndef CUTE_CLIENT_H_
-#define CUTE_CLIENT_H_
+#ifndef CUTE_MODULE_H_
+#define CUTE_MODULE_H_
 
-#include "clients/client.h"
+#include "module.h"
 
 #include <QLocalSocket>
 
 #include "proto/packet.h"
 
-namespace clients {
+namespace modules {
 
-class CuteClient: public Client {
+class CuteModule: public Module {
     Q_OBJECT
 
 private:
@@ -17,17 +17,19 @@ private:
     std::string socket_path_;
 
 public:
-    CuteClient(QObject* parent, ProtocolSP protocol);
-    ~CuteClient() override;
+    CuteModule(QObject* parent, ProtocolSP protocol);
+    ~CuteModule() override;
 
     bool init(json& config) override;
+
+    std::string type() const override { return "CuteStation"; }
 
 private:
     void connect();
     void dispatch(PacketSP packet);
 
 public slots:
-    void handle(radio_packet_t packet) override;
+    void onPacket(radio_packet_t packet) override;
 
 private slots:
     void onConnected();
