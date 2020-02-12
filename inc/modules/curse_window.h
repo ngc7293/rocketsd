@@ -32,15 +32,16 @@ private:
     void* window_;
     int rows_, cols_;
 
-    std::deque<std::string> lines_;
+    std::deque<std::pair<std::string, std::pair<std::string, bool>>> results_;
     std::string line_;
     std::mutex line_mutex_;
+    int cursor_;
 
-    std::function<std::string(std::string)> callback_;
+    std::function<std::pair<std::string, bool>(std::string)> callback_;
     bool quit_;
 
 public:
-    CurseInputWindow(int y, int x, int h, int w, std::function<std::string(std::string)> callback);
+    CurseInputWindow(int y, int x, int h, int w, std::function<std::pair<std::string, bool>(std::string)> callback);
     ~CurseInputWindow();
 
     void run();
@@ -51,6 +52,7 @@ private:
 
 void init();
 void deinit();
+void forceRefresh();
 void maxsize(int& y, int& x);
 
 }}

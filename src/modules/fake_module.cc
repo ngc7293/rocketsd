@@ -26,7 +26,7 @@ FakeModule::~FakeModule()
 bool FakeModule::init(json& config)
 {
     freq_ = 0;
-    if (has_float(config, "frequency")) {
+    if (has<float>(config, "frequency")) {
         freq_ = config["frequency"].get<double>();
     }
     if (freq_ < 0) {
@@ -34,16 +34,17 @@ bool FakeModule::init(json& config)
     }
 
     alpha_ = 1;
-    if (has_float(config, "alpha")) {
+    if (has<float>(config, "alpha")) {
         alpha_ = config["alpha"].get<double>();
     }
 
     omega_ = 1;
-    if (has_float(config, "omega")) {
+    if (has<float>(config, "omega")) {
         omega_ = config["omega"].get<double>();
     }
 
     timer_->start(1000 / freq_);
+
     Log::info("FakeModule") << "Successfully init'd Fake producer" << std::endl;
     return true;
 }
@@ -56,6 +57,11 @@ void FakeModule::onTimeout()
     packet.payload.FLOAT = alpha_ * std::sin(n_);
     n_ += omega_ * ((M_PI * 2) / freq_);
     packetReady(packet);
+}
+
+void FakeModule::onPacket(radio_packet_t packet)
+{
+    Log::info("FakeModule") << "Received packet: node=" << +packet.node << " message=" << +packet.message_id << " crc=" << +packet.checksum << std::endl;
 }
 
 } // namespace

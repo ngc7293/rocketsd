@@ -16,15 +16,14 @@ SerialModule::~SerialModule()
 
 bool SerialModule::init(json& config)
 {
-    Log::info("SerialModule") << "Successfully init'd Serial producer" << std::endl;
 
-    if (!has_string(config, "port")) {
+    if (!has<std::string>(config, "port")) {
         Log::err("SerialModule") << "Missing or invalid configuration 'port'" << std::endl;
         return false;
     }
     std::string port = config["port"].get<std::string>();
 
-    if (!has_uint(config, "baudrate")) {
+    if (!has<unsigned int>(config, "baudrate")) {
         Log::err("SerialModule") << "Missing or invalid configuration 'baudrate'" << std::endl;
         return false;
     }
@@ -34,6 +33,8 @@ bool SerialModule::init(json& config)
     serialport_->setBaudRate(baudrate);
 
     connect(serialport_, &QSerialPort::readyRead, this, &SerialModule::onData);
+
+    Log::info("SerialModule") << "Successfully init'd Serial producer" << std::endl;
     return true;
 }
 

@@ -28,7 +28,7 @@ public slots:
     void onPacket(radio_packet_t) override;
 
 private:
-    std::string onInput(std::string input);
+    std::pair<std::string, bool> onInput(std::string input);
 };
 
 } // namespaces

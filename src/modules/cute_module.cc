@@ -19,7 +19,7 @@ CuteModule::~CuteModule()
 
 bool CuteModule::init(json& config)
 {
-    if (!has_string(config, "socket")) {
+    if (!has<std::string>(config, "socket")) {
         Log::err("CuteModule") << "Missing or invalid mandatory configuration 'socket'" << std::endl;
         return false;
     }

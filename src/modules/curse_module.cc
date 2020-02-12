@@ -4,62 +4,100 @@
 #include <sstream>
 
 #include "log.h"
+#include "util.h"
 
 namespace modules {
 
-static inline void ltrim(std::string &s) {
-    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
-        return !std::isspace(ch);
-    }));
+namespace {
+
+template <class T, class U>
+T* find(U* container, std::string& name)
+{
+    auto iter = std::find_if(container->begin(), container->end(), [name](auto item) { return item.second->name() == name; });
+
+    if (iter != container->end()) {
+        return iter->second;
+    }
+    return nullptr;
 }
 
-static inline void rtrim(std::string &s) {
-    s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
-        return !std::isspace(ch);
-    }).base(), s.end());
+bool getline_trim(std::stringstream& input, std::string& result)
+{
+    while (std::getline(input, result, ' ') && result == "");
+    return result != "";
 }
 
-static inline void trim(std::string &s) {
-    ltrim(s);
-    rtrim(s);
 }
 
 CurseModule::CurseModule(QObject* parent, ProtocolSP protocol)
     : Module(parent, protocol)
+    , log_(nullptr)
+    , output_(nullptr)
+    , input_(nullptr)
 {
 }
 
 CurseModule::~CurseModule()
 {
     curses::deinit();
-    delete log_;
-    delete output_;
-    delete logstream_;
+    if (log_) {
+        delete log_;
+        delete logstream_;
+    }
 
+    if (output_) {
+        delete output_;
+    }
+
+    if (input_) {
+        delete input_;
+    }
 }
 
 bool CurseModule::init(json& config)
 {
+    bool log, output, input;
+
     int rows, cols, extra;
+    int count = 0;
 
     curses::init();
     curses::maxsize(rows, cols);
-    extra = rows % 3;
 
-    log_ = new curses::CurseOutputWindow("Log", 0, 0, (rows - extra) / 3, cols);
-    logstream_ = new curses::CurseLogStream(log_);
-    Log::get().setStream(*logstream_);
+    log = !has<bool>(config, "log") || config["log"].get<bool>();
+    output = !has<bool>(config, "output") || config["output"].get<bool>();
+    input = !has<bool>(config, "input") || config["input"].get<bool>();
 
-    output_ = new curses::CurseOutputWindow("Packets", (rows - extra) / 3, 0, (rows - extra) / 3, cols);
-    input_ = new curses::CurseInputWindow(2 * (rows - extra) / 3, 0, (rows - extra) / 3 + extra, cols, [this](std::string input) {
-        return onInput(input);
-    });
+    count = log + output + input;
+    extra = rows % count;
 
+    if (log) {
+        log_ = new curses::CurseOutputWindow("Log", 0, 0, (rows - extra) / count, cols);
+        logstream_ = new curses::CurseLogStream(log_);
+        Log::get().setStream(*logstream_);
+    }
+
+    if (output) {
+        output_ = new curses::CurseOutputWindow("Packets", (rows - extra) / count, 0, (rows - extra) / count, cols);
+    }
+
+    if (input) {
+        input_ = new curses::CurseInputWindow((count - 1) * (rows - extra) / count, 0, (rows - extra) / count + extra, cols, [this](std::string input) {
+            return onInput(input);
+        });
+    }
+
+    Log::info("CurseModule") << "Successfully init'd CurseModule" << std::endl;
+    curses::forceRefresh();
     return true;
 }
 
 void CurseModule::onPacket(radio_packet_t packet)
 {
+    if (!output_) {
+        return;
+    }
+
     std::stringstream ss;
     Node* node;
     Message* message;
@@ -78,23 +116,61 @@ void CurseModule::onPacket(radio_packet_t packet)
     output_->write(ss.str());
 }
 
-std::string CurseModule::onInput(std::string input)
+std::pair<std::string, bool> CurseModule::onInput(std::string input)
 {
-    trim(input);
+    std::stringstream ss(input);
+    std::string name, param, temp;
 
-    std::size_t pos = input.find_first_of(" ");
-    if (pos == -1) {
-        return "missing parameter";
+    auto error = [](std::string str) { return std::make_pair(str, false); };
+
+    if (!getline_trim(ss, name)) {
+        return error("missing message id");
+    } else if (!getline_trim(ss, param)) {
+        return error("missing message id");
+    } else if (getline_trim(ss, temp)) {
+        return error("missing message id");
     }
 
-    if (input.find_last_of(" ") != pos) {
-        return "too many parameters";
+    ss.str(name);
+    ss.clear();
+    if (!std::getline(ss, temp, '.')) {
+        return error("unknown message id (" + name + ")");
     }
 
-    std::string name = input.substr(0, pos);
-    std::string param = input.substr(pos + 1);
+    if (temp == "anirniq") {
+        std::getline(ss, temp, '.');
+    }
 
-    return name + "=" + param;
+    Node* node = find<Node, Protocol>(protocol_.get(), temp);
+    if (!node) {
+        return error("no such node (" + temp + ")");
+    }
+
+    temp = name.substr(ss.tellg());
+    Message* message = find<Message, Node>(node, temp);
+    if (!message) {
+        return error("no such message (" + temp + ")");
+    }
+
+    radio_packet_t packet;
+    packet.node = node->id();
+    packet.message_id = message->id();
+
+    if (message->type() == "float") {
+        packet.payload.FLOAT = std::stod(param);
+    } else if (message->type() == "int") {
+        packet.payload.INT = std::stoi(param);
+    } else {
+        return error("unhandled format for message (" + temp + ")");
+    }
+
+    packet.checksum = radio_compute_crc(&packet);
+    packetReady(packet);
+
+    ss.str(std::string());
+    ss.clear();
+    ss << node->name() << " " << message->name() << " = " << param << " (CRC " << +packet.checksum << ")";
+    return std::make_pair(ss.str(), true);
 }
 
 } // namespaces

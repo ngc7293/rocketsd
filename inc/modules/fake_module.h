@@ -23,7 +23,7 @@ public:
     std::string type() const override { return "Fake"; }
 
 public slots:
-    void onPacket(radio_packet_t packet) override {}
+    void onPacket(radio_packet_t packet) override;
 
 private slots:
     void onTimeout();

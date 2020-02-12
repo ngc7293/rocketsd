@@ -4,6 +4,10 @@
 
 #include <ncurses.h>
 
+#define PAIR_RED   1
+#define PAIR_BLUE  2
+#define PAIR_GREEN 3
+
 namespace modules { namespace curses {
 
 std::mutex mutex;
@@ -79,7 +83,7 @@ void CurseOutputWindow::refresh()
     wrefresh(window);
 }
 
-CurseInputWindow::CurseInputWindow(int y, int x, int h, int w, std::function<std::string(std::string)> callback)
+CurseInputWindow::CurseInputWindow(int y, int x, int h, int w, std::function<std::pair<std::string, bool>(std::string)> callback)
     : callback_(callback)
 {
     window_ = (void*)newwin(h, w, y, x);
@@ -113,19 +117,34 @@ void CurseInputWindow::run()
             {
                 const std::lock_guard<std::mutex> lock_line(line_mutex_);
 
-                if (c == '\n') {
-                    lines_.push_back(line_);
-                    lines_.push_back(callback_(line_));
-                    line_ = "";
-
-                    if (lines_.size() > rows_ - 1) {
-                        lines_.erase(lines_.begin());
+                switch (c) {
+                case '\n':
+                    results_.push_back(std::make_pair(line_, callback_(line_)));
+                    if (results_.size() * 2 > rows_ - 1) {
+                        results_.erase(results_.begin());
                     }
-                } else if (c == KEY_BACKSPACE) {
+
+                    line_ = "";
+                    cursor_ = results_.size();
+                    break;
+                case KEY_BACKSPACE:
                     if (line_.size()) {
                         line_.pop_back();
                     }
-                } else {
+                    break;
+                case KEY_UP:
+                    if (cursor_ > 0) {
+                        cursor_--;
+                        line_ = results_[cursor_].first;
+                    }
+                    break;
+                case KEY_DOWN:
+                    if (cursor_ < results_.size()) {
+                        cursor_++;
+                        line_ = (cursor_ == results_.size()) ? "" : results_[cursor_].first;
+                    }
+                    break;
+                default:
                     line_.push_back(c);
                 }
             }
@@ -147,27 +166,26 @@ void CurseInputWindow::refresh()
     wmove(window, 0, 2);
     waddstr(window, "Input");
 
-    int i = 1;
-    for (const std::string& line : lines_) {
-        wmove(window, i + rows_ - lines_.size() - 1, 1);
+    int i = 0;
+    for (const auto& result : results_) {
+        wmove(window, i + rows_ - (results_.size() * 2) - 1, 1);
+        waddstr(window, "< ");
+        waddstr(window, result.first.c_str());
 
-        if (i % 2 == 0) {
-            wattron(window, COLOR_PAIR(2));
-            waddstr(window, "> ");
-        } else {
-            waddstr(window, "< ");
-        }
+        wattron(window, COLOR_PAIR(result.second.second ? PAIR_GREEN : PAIR_RED));
+        wmove(window, i + rows_ - (results_.size() * 2), 1);
+        waddstr(window, "> ");
+        waddstr(window, result.second.first.c_str());
+        wattroff(window, COLOR_PAIR(result.second.second ? PAIR_GREEN : PAIR_RED));
 
-        waddstr(window, line.c_str());
-        wattroff(window, COLOR_PAIR(2));
-        i++;
+        i += 2;
     }
 
     wmove(window, rows_, 1);
     waddstr(window, "> ");
-    wattron(window, COLOR_PAIR(1));
+    wattron(window, COLOR_PAIR(PAIR_BLUE));
     waddstr(window, line_.c_str());
-    wattroff(window, COLOR_PAIR(1));
+    wattroff(window, COLOR_PAIR(PAIR_BLUE));
     wrefresh(window);
 }
 
@@ -178,13 +196,19 @@ void init()
     noecho();
     keypad(stdscr, true);
     start_color();
-    init_pair(1, COLOR_RED, COLOR_BLACK);
-    init_pair(2, COLOR_BLUE, COLOR_BLACK);
+    init_pair(PAIR_RED, COLOR_RED, COLOR_BLACK);
+    init_pair(PAIR_BLUE, COLOR_BLUE, COLOR_BLACK);
+    init_pair(PAIR_GREEN, COLOR_GREEN, COLOR_BLACK);
 }
 
 void deinit()
 {
     endwin();
+}
+
+void forceRefresh()
+{
+    wrefresh(curscr);
 }
 
 void maxsize(int& y, int& x)

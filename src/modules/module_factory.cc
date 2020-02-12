@@ -16,7 +16,7 @@ namespace modules {
 Module* ModuleFactory::build(ProtocolSP protocol, json& config, QObject* parent)
 {
     Module* module;
-    if (!has_string(config, "module")) {
+    if (!has<std::string>(config, "module")) {
         Log::err("ModuleFactory") << "Missing or invalid mandatory configuration 'module'" << std::endl;
         return nullptr;
     }

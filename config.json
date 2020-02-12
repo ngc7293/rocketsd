@@ -16,7 +16,8 @@
 			"buffer_size": 5000
         },
         {
-            "module": "curse"
+            "module": "curse",
+            "output": true
         }
     ]
 }

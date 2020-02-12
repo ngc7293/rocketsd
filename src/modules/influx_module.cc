@@ -20,17 +20,18 @@ InfluxModule::~InfluxModule() {}
 
 bool InfluxModule::init(json& config)
 {
-    if (!has_string(config, "url")) {
+    if (!has<std::string>(config, "url")) {
         Log::err("InfluxModule") << "Missing or invalid mandatory configuration 'url'" << std::endl;
         return false;
     }
     base_url_ = config["url"].get<std::string>();
+
     if (!QUrl(base_url_.c_str()).isValid()) {
         Log::err("InfluxModule") << "Invalid URL" << std::endl;
         return false;
     }
 
-    if (!has_uint(config, "buffer_size")) {
+    if (!has<unsigned int>(config, "buffer_size")) {
         Log::err("InfluxModule") << "Missing or invalid mandatory configuration 'buffer_size'" << std::endl;
         return false;
     }

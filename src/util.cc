@@ -10,24 +10,34 @@ std::uint64_t now_ns()
     return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 }
 
-bool has_string(const json& j, std::string key)
+template<>
+bool has<std::string>(const json& j, std::string key)
 {
     return j.count(key) && j[key].is_string();
 }
 
-bool has_float(const json& j, std::string key)
+template<>
+bool has<float>(const json& j, std::string key)
 {
     return j.count(key) && j[key].is_number();
 }
 
-bool has_int(const json& j, std::string key)
+template<>
+bool has<int>(const json& j, std::string key)
 {
     return j.count(key) && j[key].is_number_integer();
 }
 
-bool has_uint(const json& j, std::string key)
+template<>
+bool has<unsigned int>(const json& j, std::string key)
 {
     return j.count(key) && j[key].is_number_unsigned();
+}
+
+template<>
+bool has<bool>(const json& j, std::string key)
+{
+    return j.count(key) && j[key].is_boolean();
 }
 
 bool has_array(const json& j, std::string key, int size)
