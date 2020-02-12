@@ -9,6 +9,9 @@ set( SOURCES
     src/app.cc
     src/log.cc
     src/main.cc
+    src/modules/curse_logstream.cc
+    src/modules/curse_module.cc
+    src/modules/curse_window.cc
     src/modules/cute_module.cc
     src/modules/fake_module.cc
     src/modules/influx_module.cc
@@ -24,6 +27,9 @@ set( SOURCES
 SET( HEADERS
     inc/app.h
     inc/log.h
+    inc/modules/curse_logstream.h
+    inc/modules/curse_module.h
+    inc/modules/curse_window.h
     inc/modules/cute_module.h
     inc/modules/fake_module.h
     inc/modules/influx_module.h
@@ -53,8 +59,11 @@ find_package(Protobuf REQUIRED)
 # Nlohmann JSON, for config
 find_package(nlohmann_json 3.7.0 REQUIRED)
 
+find_package(Curses REQUIRED)
+include_directories(${CURSES_INCLUDE_DIR})
+
 add_executable(rocketsd ${SOURCES} ${HEADERS} ${UI})
 set_property(TARGET rocketsd PROPERTY CXX_STANDARD 17)
-target_link_libraries(rocketsd Qt5::Network Qt5::Xml Qt5::SerialPort protobuf::libprotobuf gcov nlohmann_json::nlohmann_json)
+target_link_libraries(rocketsd Qt5::Network Qt5::Xml Qt5::SerialPort protobuf::libprotobuf gcov nlohmann_json::nlohmann_json ${CURSES_LIBRARY})
 target_include_directories(rocketsd PRIVATE . inc)
 target_compile_options(rocketsd PRIVATE -Wall -Wpedantic)

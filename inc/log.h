@@ -13,6 +13,9 @@ public:
         ERROR = 2
     };
 
+private:
+    std::ostream* stream_;
+
 public:
     static Log& get();
 
@@ -25,6 +28,8 @@ public:
     ~Log();
 
     std::ostream& log(Level level, std::string component, std::string message);
+
+    void setStream(std::ostream& stream) { stream_ = &stream; }
 
 private:
     Log();

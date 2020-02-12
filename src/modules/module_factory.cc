@@ -9,6 +9,7 @@
 #include "modules/influx_module.h"
 #include "modules/fake_module.h"
 #include "modules/serial_module.h"
+#include "modules/curse_module.h"
 
 namespace modules {
 
@@ -29,6 +30,8 @@ Module* ModuleFactory::build(ProtocolSP protocol, json& config, QObject* parent)
         module = new FakeModule(parent, protocol);
     } else if (type == "serial") {
         module = new SerialModule(parent, protocol);
+    } else if (type == "curse") {
+        module = new CurseModule(parent, protocol);
     } else {
         Log::warn("ModuleFactory") << "Unknown module type '" << type << "'" << std::endl;
         return nullptr;

@@ -38,7 +38,7 @@ std::ostream& Log::err(std::string component, std::string message)
     return Log::get().log(ERROR, component, message);
 }
 
-Log::Log() {}
+Log::Log() : stream_(&std::cout) {}
 
 Log::~Log() {}
 
@@ -52,11 +52,11 @@ std::ostream& Log::log(Level level, std::string component, std::string message)
 {
     auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 
-    std::cout << "[" << std::put_time(std::localtime(&now), LOG_TIME_FORMAT) << "] (" << LOG_LEVEL_STRING.at(level) << ") [" << component << "] ";
+    *stream_ << "[" << std::put_time(std::localtime(&now), LOG_TIME_FORMAT) << "] (" << LOG_LEVEL_STRING.at(level) << ") [" << component << "] ";
 
     if (message != "") {
-        std::cout << message << std::endl;
+        *stream_ << message << std::endl;
     }
 
-    return std::cout;
+    return *stream_;
 }

@@ -4,8 +4,12 @@
 
 #include <QThread>
 
+#include <ncurses.h>
+
 #include <nlohmann/json.hpp>
 
+#include "log.h"
+#include "modules/curse_module.h"
 #include "modules/module_factory.h"
 #include "protocol_parser.h"
 
@@ -17,6 +21,7 @@ App::App(int argc, char* argv[])
     : QCoreApplication(argc, argv)
 {
     qRegisterMetaType<radio_packet_t>();
+
     ProtocolParser parser;
     protocol_ = ProtocolSP(parser.parse("protocol.xml"));
 
@@ -51,4 +56,6 @@ App::App(int argc, char* argv[])
     }
 }
 
-App::~App() {}
+App::~App()
+{
+}
