@@ -49,7 +49,8 @@ void SerialModule::onData()
     //FIXME: This has not been tested whatsoever
     radio_packet_t packet;
 
-    for (const auto& byte : serialport_->readAll()) {
+    QByteArray buffer = serialport_->readAll();
+    for (const auto& byte: buffer) {
         buffer_.push_back(static_cast<std::uint8_t>(byte));
 
         if (buffer_.size() > sizeof(radio_packet_t)) {
@@ -72,7 +73,7 @@ void SerialModule::onData()
             packet.checksum = buffer_[10];
 
             if (packet.checksum == radio_compute_crc(&packet)) {
-                packetReady(packet);
+                emit packetReady(packet);
                 buffer_.erase(buffer_.begin(), buffer_.begin() + sizeof(radio_packet_t));
             } else {
                 buffer_.erase(buffer_.begin());

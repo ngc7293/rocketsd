@@ -1,8 +1,8 @@
-#include "modules/curse_logstream.h"
+#include "curse_logstream.h"
 
-#include "modules/curse_window.h"
+#include "curse_window.h"
 
-namespace modules { namespace curses {
+namespace modules::curses {
 
 CurseLogStream::CurseLogStream(CurseOutputWindow* window)
     : std::ostream(this)
@@ -18,4 +18,4 @@ int CurseLogStream::overflow(int c)
     return 0;
 }
 
-}} // namespaces
+} // namespaces

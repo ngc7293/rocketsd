@@ -6,7 +6,10 @@
 #include "packet.pb.h"
 #include <QObject>
 
+namespace cute::proto {
 typedef std::shared_ptr<Packet> PacketSP;
-Q_DECLARE_METATYPE(PacketSP);
+}
+
+Q_DECLARE_METATYPE(cute::proto::PacketSP);
 
 #endif

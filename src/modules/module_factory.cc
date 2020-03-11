@@ -31,7 +31,7 @@ Module* ModuleFactory::build(ProtocolSP protocol, json& config, QObject* parent)
     } else if (type == "serial") {
         module = new SerialModule(parent, protocol);
     } else if (type == "curse") {
-        module = new CurseModule(parent, protocol);
+        module = new curses::CurseModule(parent, protocol);
     } else {
         Log::warn("ModuleFactory") << "Unknown module type '" << type << "'" << std::endl;
         return nullptr;

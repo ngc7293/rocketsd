@@ -1,14 +1,15 @@
-#include "modules/curse_window.h"
+#include "curse_window.h"
 
 #include <thread>
 
 #include <ncurses.h>
 
-#define PAIR_RED   1
-#define PAIR_BLUE  2
-#define PAIR_GREEN 3
+#define PAIR_DEFAULT 1
+#define PAIR_RED     2
+#define PAIR_BLUE    3
+#define PAIR_GREEN   4
 
-namespace modules { namespace curses {
+namespace modules::curses {
 
 std::mutex mutex;
 
@@ -68,6 +69,7 @@ void CurseOutputWindow::refresh()
     const std::lock_guard<std::mutex> lock(mutex);
     WINDOW* window = (WINDOW*)window_;
 
+    wattron(window, COLOR_PAIR(PAIR_DEFAULT));
     werase(window);
     box(window, 0, 0);
     wmove(window, 0, 2);
@@ -81,6 +83,7 @@ void CurseOutputWindow::refresh()
     }
 
     wrefresh(window);
+    wattroff(window, COLOR_PAIR(PAIR_DEFAULT));
 }
 
 CurseInputWindow::CurseInputWindow(int y, int x, int h, int w, std::function<std::pair<std::string, bool>(std::string)> callback)
@@ -192,13 +195,15 @@ void CurseInputWindow::refresh()
 void init()
 {
     initscr();
+    use_default_colors();
     cbreak();
     noecho();
     keypad(stdscr, true);
     start_color();
-    init_pair(PAIR_RED, COLOR_RED, COLOR_BLACK);
-    init_pair(PAIR_BLUE, COLOR_BLUE, COLOR_BLACK);
-    init_pair(PAIR_GREEN, COLOR_GREEN, COLOR_BLACK);
+    init_pair(PAIR_DEFAULT, -1, -1);
+    init_pair(PAIR_RED, COLOR_RED, -1);
+    init_pair(PAIR_BLUE, COLOR_BLUE, -1);
+    init_pair(PAIR_GREEN, COLOR_GREEN, -1);
 }
 
 void deinit()
@@ -216,4 +221,4 @@ void maxsize(int& y, int& x)
     getmaxyx(stdscr, y, x);
 }
 
-}} // namespaces
+} // namespaces

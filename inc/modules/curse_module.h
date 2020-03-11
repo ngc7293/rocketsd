@@ -5,16 +5,17 @@
 
 #include <string>
 
-#include "curse_window.h"
-#include "curse_logstream.h"
+namespace modules::curses {
 
-namespace modules {
+class CurseOutputWindow;
+class CurseInputWindow;
+class CurseLogStream;
 
 class CurseModule : public Module {
 private:
-    curses::CurseOutputWindow *log_, *output_;
-    curses::CurseLogStream* logstream_;
-    curses::CurseInputWindow *input_;
+    CurseOutputWindow *log_, *output_;
+    CurseLogStream* logstream_;
+    CurseInputWindow *input_;
 
 public:
     CurseModule(QObject* parent, ProtocolSP protocol);

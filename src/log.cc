@@ -8,14 +8,20 @@
 #include <ctime>
 
 namespace {
-const std::map<Log::Level, std::string> LOG_LEVEL_STRING = {
-    { Log::DEBUG, "debug" },
-    { Log::INFO, "info" },
-    { Log::WARNING, "warning" },
-    { Log::ERROR, "error" }
-};
-
 const char* LOG_TIME_FORMAT = "%Y-%m-%d %H:%M:%S";
+
+const std::string string_from_level(Log::Level level)
+{
+    static const std::map<const Log::Level, const std::string> LOG_LEVEL_STRING = {
+        { Log::DEBUG, "debug" },
+        { Log::INFO, "info" },
+        { Log::WARNING, "warning" },
+        { Log::ERROR, "error" },
+    };
+
+    return LOG_LEVEL_STRING.at(level);
+}
+
 }
 
 std::ostream& Log::debug(std::string component, std::string message)
@@ -52,7 +58,7 @@ std::ostream& Log::log(Level level, std::string component, std::string message)
 {
     auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 
-    *stream_ << "[" << std::put_time(std::localtime(&now), LOG_TIME_FORMAT) << "] (" << LOG_LEVEL_STRING.at(level) << ") [" << component << "] ";
+    *stream_ << "[" << std::put_time(std::localtime(&now), LOG_TIME_FORMAT) << "] (" << string_from_level(level) << ") [" << component << "] ";
 
     if (message != "") {
         *stream_ << message << std::endl;

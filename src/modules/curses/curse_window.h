@@ -6,7 +6,7 @@
 #include <mutex>
 #include <functional>
 
-namespace modules { namespace curses {
+namespace modules::curses {
 
 class CurseOutputWindow {
 private:
@@ -55,6 +55,6 @@ void deinit();
 void forceRefresh();
 void maxsize(int& y, int& x);
 
-}}
+} // namespaces
 
 #endif

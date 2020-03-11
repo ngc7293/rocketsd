@@ -56,7 +56,7 @@ void FakeModule::onTimeout()
     packet.message_id = CAN_ACQUISITION_GPS_LAT_INDEX;
     packet.payload.FLOAT = alpha_ * std::sin(n_);
     n_ += omega_ * ((M_PI * 2) / freq_);
-    packetReady(packet);
+    emit packetReady(packet);
 }
 
 void FakeModule::onPacket(radio_packet_t packet)

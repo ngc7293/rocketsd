@@ -53,9 +53,18 @@ App::App(int argc, char* argv[])
         }
 
         thread->start();
+        workers_.push_back(thread);
     }
 }
 
 App::~App()
 {
+    Log::info("App", "Quitting!");
+    for (QThread* thread: workers_) {
+        thread->quit();
+    }
+
+    for (QThread* thread: workers_) {
+        thread->wait();
+    }
 }

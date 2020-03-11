@@ -6,7 +6,10 @@
 #include "log.h"
 #include "util.h"
 
-namespace modules {
+#include "curse_logstream.h"
+#include "curse_window.h"
+
+namespace modules::curses {
 
 namespace {
 
@@ -39,7 +42,7 @@ CurseModule::CurseModule(QObject* parent, ProtocolSP protocol)
 
 CurseModule::~CurseModule()
 {
-    curses::deinit();
+    deinit();
     if (log_) {
         delete log_;
         delete logstream_;
@@ -62,7 +65,7 @@ bool CurseModule::init(json& config)
     int count = 0;
 
     curses::init();
-    curses::maxsize(rows, cols);
+    maxsize(rows, cols);
 
     log = !has<bool>(config, "log") || config["log"].get<bool>();
     output = !has<bool>(config, "output") || config["output"].get<bool>();
@@ -72,13 +75,13 @@ bool CurseModule::init(json& config)
     extra = rows % count;
 
     if (log) {
-        log_ = new curses::CurseOutputWindow("Log", 0, 0, (rows - extra) / count, cols);
-        logstream_ = new curses::CurseLogStream(log_);
+        log_ = new CurseOutputWindow("Log", 0, 0, (rows - extra) / count, cols);
+        logstream_ = new CurseLogStream(log_);
         Log::get().setStream(*logstream_);
     }
 
     if (output) {
-        output_ = new curses::CurseOutputWindow("Packets", (rows - extra) / count, 0, (rows - extra) / count, cols);
+        output_ = new CurseOutputWindow("Packets", (rows - extra) / count, 0, (rows - extra) / count, cols);
     }
 
     if (input) {
@@ -153,6 +156,7 @@ std::pair<std::string, bool> CurseModule::onInput(std::string input)
     }
 
     radio_packet_t packet;
+    memset((void*)&packet, 0, sizeof(radio_packet_t));
     packet.node = node->id();
     packet.message_id = message->id();
 
@@ -165,7 +169,7 @@ std::pair<std::string, bool> CurseModule::onInput(std::string input)
     }
 
     packet.checksum = radio_compute_crc(&packet);
-    packetReady(packet);
+    emit packetReady(packet);
 
     ss.str(std::string());
     ss.clear();

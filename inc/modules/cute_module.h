@@ -26,10 +26,11 @@ public:
 
 private:
     void connect();
-    void dispatch(PacketSP packet);
+    void dispatch(cute::proto::PacketSP packet);
 
 public slots:
     void onPacket(radio_packet_t packet) override;
+    void onSocketData();
 
 private slots:
     void onConnected();

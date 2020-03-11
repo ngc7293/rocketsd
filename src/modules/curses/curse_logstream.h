@@ -5,7 +5,7 @@
 
 #include <ncurses.h>
 
-namespace modules { namespace curses {
+namespace modules::curses {
 
 class CurseOutputWindow;
 
@@ -20,6 +20,6 @@ public:
     int overflow(int c) override;
 };
 
-}} // namespaces
+} // namespaces
 
 #endif
