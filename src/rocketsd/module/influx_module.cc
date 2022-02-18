@@ -3,6 +3,8 @@
 #include <QNetworkRequest>
 #include <QUrl>
 
+#include <influx/influx.hh>
+#include <influx/measurement.hh>
 #include <util/json.hh>
 #include <util/time.hh>
 #include <util/switch.hh>
@@ -12,10 +14,7 @@ namespace rocketsd::modules {
 
 InfluxModule::InfluxModule(QObject* parent)
     : Module(parent)
-    , network_(new QNetworkAccessManager(this))
-    , lines_(0)
 {
-    connect(network_, &QNetworkAccessManager::finished, this, &InfluxModule::onError);
 }
 
 InfluxModule::~InfluxModule() {}
@@ -26,17 +25,19 @@ bool InfluxModule::init(json& config)
         return false;
     }
 
+    std::string host, org, bucket, token;
     if (!util::json::validate("InfluxModule", config,
-        util::json::required(base_url_, "url"),
-        util::json::required(max_lines_, "buffer_size")
+        util::json::required(host, "host"),
+        util::json::required(org, "org_id"),
+        util::json::required(bucket, "bucket_id"),
+        util::json::required(token, "token"),
+        util::json::required(bufferSize_, "buffer_size")
     )) {
         return false;
     }
 
-    if (!QUrl(base_url_.c_str()).isValid()) {
-        logging::err("InfluxModule") << "Invalid URL" << logging::endl;
-        return false;
-    }
+    auto db = influx::Influx(host, org, token);
+    bucket_.reset(new influx::Bucket(db.GetBucket(bucket)));
 
     logging::info("InfluxModule") << "Successfully init'd InfluxStation client" << logging::tag{"id", id()} << logging::endl;
     return true;
@@ -44,48 +45,40 @@ bool InfluxModule::init(json& config)
 
 void InfluxModule::onMessage(Message message)
 {
-    std::stringstream local;
-    local << message.source << " ";
+    if (!bucket_) {
+        return;
+    }
+
+    influx::Measurement m(message.measurement.source());
 
     switch (message.measurement.value_case()) {
         case cute::proto::Measurement::kBool:
-            local << (message.measurement.bool_() ? "true" : "false");
+            m << influx::Field("value", message.measurement.bool_());
             break;
-        case cute::proto::Measurement::kNumber:    
-            local << message.measurement.number();
+        case cute::proto::Measurement::kNumber:
+            m << influx::Field("value", message.measurement.number());
             break;
         case cute::proto::Measurement::kState:
-            local << (message.measurement.state());
+            m << influx::Field("state", message.measurement.state());
             break;
         case cute::proto::Measurement::kString:
-            local << (message.measurement.string());
+        m << influx::Field("value", message.measurement.string());
             break;
         case cute::proto::Measurement::VALUE_NOT_SET:
             logging::err("InfluxModule") << "Received invalid measurement, ignoring" << logging::endl;
             return;
     }
      
-    local << " " << util::time::now<std::nano>() << std::endl;
-    buffer_ << local.str();
-    lines_++;
+    *bucket_ << m;
 
-    if (lines_ >= max_lines_) {
-        QNetworkRequest request(QUrl((base_url_ + "/write?db=anirniq").c_str()));
-        request.setHeader(QNetworkRequest::KnownHeaders::ContentTypeHeader, "application/x-influx");
-        network_->post(request, QByteArray(buffer_.str().c_str()));
-        buffer_.str("");
-        lines_ = 0;
-    }
-}
-
-void InfluxModule::onError(QNetworkReply* reply)
-{
-    switch (reply->error()) {
-        case QNetworkReply::NetworkError::NoError:
-            break;
-
-        default:
-            logging::err("InfluxModule") << "HTTP error " << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() << logging::endl;
+    if (bucket_->BufferedMeasurementsCount() > bufferSize_) {
+        try {
+            bucket_->Flush();
+        } catch (influx::InfluxError& e) {
+            logging::err("InfluxModule") << "Error flushing data to Influx" << logging::tag{"response", e.what()} << logging::endl;
+        } catch (...) {
+            logging::err("InfluxModule") << "Unhandled error when trying to flush data to Influx" << logging::endl;
+        }
     }
 }
 

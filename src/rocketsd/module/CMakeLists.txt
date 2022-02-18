@@ -16,6 +16,6 @@ set(SOURCES
 
 add_library(rocketsd.module STATIC ${SOURCES} ${HEADERS})
 target_standard_compile_flags(rocketsd.module)
-target_link_libraries(rocketsd.module PUBLIC cute.util cute.log cute.proto rocketsd.protocol rocketsd.shared rocketsd.module.cute CONAN_PKG::qt)
+target_link_libraries(rocketsd.module PUBLIC cute.util cute.log cute.proto rocketsd.protocol rocketsd.shared rocketsd.module.cute influx CONAN_PKG::qt)
 
 add_subdirectory(cute)
