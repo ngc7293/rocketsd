@@ -33,7 +33,7 @@ jobs:
           submodules: true
 
       - name: Install tools (Ubuntu)
-        if: matrix.config.os == 'ubuntu-latest'
+        if: matrix.config.os == 'ubuntu-20.04'
         run: sudo apt-get install libgl-dev ninja-build
 
       - name: Install Conan
@@ -47,12 +47,12 @@ jobs:
         run: mkdir build
 
       - name: Install Third Parties (Ubuntu)
-        if: matrix.config.os == 'ubuntu-latest'
+        if: matrix.config.os == 'ubuntu-20.04'
         working-directory: build
         run: conan install .. --build=missing --update -s compiler.version=10 -s compiler.libcxx=libstdc++11 -s build_type=${{ matrix.config.build_type }} -r davidbourgault
 
       - name: Install Third Parties (Windows)
-        if: matrix.config.os == 'windows-latest'
+        if: matrix.config.os == 'windows-2022'
         working-directory: build
         run: conan install .. --build=missing --update -s compiler="Visual Studio" -s compiler.version=17 -s build_type=${{ matrix.config.build_type }} -r davidbourgault
 
@@ -108,7 +108,7 @@ jobs:
       - name: Upload
         uses: ncipollo/release-action@v1
         with:
-          artifacts: 'binary-ubuntu-latest/*.deb,binary-windows-latest/*.msi'
+          artifacts: 'binary-ubuntu-20.04/*.deb,binary-windows-2022/*.msi'
           token: ${{ secrets.GITHUB_TOKEN }}
           commit: ${{ github.ref }}
           tag: v${{ env.VERSION }}
