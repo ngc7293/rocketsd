@@ -54,7 +54,7 @@ jobs:
       - name: Install Third Parties (Windows)
         if: matrix.config.os == 'windows-latest'
         working-directory: build
-        run: conan install .. --build=missing --update -s compiler="Visual Studio" -s compiler.version=16 -s build_type=${{ matrix.config.build_type }} -r davidbourgault
+        run: conan install .. --build=missing --update -s compiler="Visual Studio" -s compiler.version=17 -s build_type=${{ matrix.config.build_type }} -r davidbourgault
 
       - name: Upload
         run: conan upload qt/* --remote davidbourgault --all --confirm
