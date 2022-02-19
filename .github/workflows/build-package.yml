@@ -57,7 +57,7 @@ jobs:
         run: conan install .. --build=missing --update -s compiler="Visual Studio" -s compiler.version=17 -s build_type=${{ matrix.config.build_type }} -r davidbourgault
 
       - name: Upload
-        run: conan upload * --remote davidbourgault --all --confirm
+        run: conan upload '*' --remote davidbourgault --all --confirm
 
       - name: Configure
         working-directory: build
