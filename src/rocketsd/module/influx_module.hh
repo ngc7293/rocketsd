@@ -5,8 +5,7 @@
 
 #include <sstream>
 
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
+#include <influx/bucket.hh>
 
 namespace rocketsd::modules {
 
@@ -14,12 +13,8 @@ class InfluxModule : public Module {
     Q_OBJECT
 
 private:
-    QNetworkAccessManager* network_;
-    std::string base_url_;
-    int max_lines_;
-
-    std::stringstream buffer_;
-    int lines_;
+    influx::Bucket bucket_;
+    std::size_t bufferSize_;
 
 public:
     InfluxModule(QObject* parent);
@@ -31,9 +26,6 @@ public:
 
 public slots:
     void onMessage(Message message) override;
-
-private slots:
-    void onError(QNetworkReply* reply);
 };
 
 } // namespaces

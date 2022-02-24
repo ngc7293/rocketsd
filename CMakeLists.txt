@@ -83,4 +83,5 @@ if (UNIX)
     add_custom_target(coverage COMMAND gcovr -r ../src ./ -e ".*gtest.*" -e ".*/tests/.*" --html-details -o coverage.html)
 endif()
 
+add_subdirectory(libs)
 add_subdirectory(src)

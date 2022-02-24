@@ -3,6 +3,8 @@
 #include <QNetworkRequest>
 #include <QUrl>
 
+#include <influx/influx.hh>
+#include <influx/measurement.hh>
 #include <util/json.hh>
 #include <util/time.hh>
 #include <util/switch.hh>
@@ -10,12 +12,16 @@
 
 namespace rocketsd::modules {
 
+namespace {
+    std::string isodate()
+    {
+        return util::time::to_string(std::chrono::system_clock::now(), "%F %T");
+    }
+}
+
 InfluxModule::InfluxModule(QObject* parent)
     : Module(parent)
-    , network_(new QNetworkAccessManager(this))
-    , lines_(0)
 {
-    connect(network_, &QNetworkAccessManager::finished, this, &InfluxModule::onError);
 }
 
 InfluxModule::~InfluxModule() {}
@@ -26,16 +32,23 @@ bool InfluxModule::init(json& config)
         return false;
     }
 
+    std::string host, org, bucket, token;
     if (!util::json::validate("InfluxModule", config,
-        util::json::required(base_url_, "url"),
-        util::json::required(max_lines_, "buffer_size")
+        util::json::required(host, "host"),
+        util::json::required(org, "org_id"),
+        util::json::required(token, "token"),
+        util::json::required(bufferSize_, "buffer_size"),
+        util::json::optional(bucket, "bucket_id", "")
     )) {
         return false;
     }
 
-    if (!QUrl(base_url_.c_str()).isValid()) {
-        logging::err("InfluxModule") << "Invalid URL" << logging::endl;
-        return false;
+    auto db = influx::Influx(host, org, token);
+
+    if (bucket.empty()) {
+        bucket_ = db.CreateBucket("rocketsd-" + isodate(), std::chrono::years(1));
+    } else {
+        bucket_ = db.GetBucket(bucket);
     }
 
     logging::info("InfluxModule") << "Successfully init'd InfluxStation client" << logging::tag{"id", id()} << logging::endl;
@@ -44,48 +57,44 @@ bool InfluxModule::init(json& config)
 
 void InfluxModule::onMessage(Message message)
 {
-    std::stringstream local;
-    local << message.source << " ";
+    if (!bucket_) {
+        return;
+    }
+
+    const std::string& source = message.measurement.source();
+    std::size_t start = source.find_first_of('.');
+    std::size_t end = source.find_first_of('.', start + 1);
+
+    influx::Measurement m(source.substr(start + 1, end - start - 1));
 
     switch (message.measurement.value_case()) {
         case cute::proto::Measurement::kBool:
-            local << (message.measurement.bool_() ? "true" : "false");
+            m << influx::Field(source.substr(end + 1), message.measurement.bool_());
             break;
-        case cute::proto::Measurement::kNumber:    
-            local << message.measurement.number();
+        case cute::proto::Measurement::kNumber:
+            m << influx::Field(source.substr(end + 1), message.measurement.number());
             break;
         case cute::proto::Measurement::kState:
-            local << (message.measurement.state());
+            m << influx::Field(source.substr(end + 1), message.measurement.state());
             break;
         case cute::proto::Measurement::kString:
-            local << (message.measurement.string());
+        m << influx::Field(source.substr(end + 1), message.measurement.string());
             break;
         case cute::proto::Measurement::VALUE_NOT_SET:
             logging::err("InfluxModule") << "Received invalid measurement, ignoring" << logging::endl;
             return;
     }
-     
-    local << " " << util::time::now<std::nano>() << std::endl;
-    buffer_ << local.str();
-    lines_++;
 
-    if (lines_ >= max_lines_) {
-        QNetworkRequest request(QUrl((base_url_ + "/write?db=anirniq").c_str()));
-        request.setHeader(QNetworkRequest::KnownHeaders::ContentTypeHeader, "application/x-influx");
-        network_->post(request, QByteArray(buffer_.str().c_str()));
-        buffer_.str("");
-        lines_ = 0;
-    }
-}
+    bucket_ << m;
 
-void InfluxModule::onError(QNetworkReply* reply)
-{
-    switch (reply->error()) {
-        case QNetworkReply::NetworkError::NoError:
-            break;
-
-        default:
-            logging::err("InfluxModule") << "HTTP error " << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() << logging::endl;
+    if (bucket_.BufferedMeasurementsCount() > bufferSize_) {
+        try {
+            bucket_.Flush();
+        } catch (influx::InfluxError& e) {
+            logging::err("InfluxModule") << "Error flushing data to Influx" << logging::tag{"response", e.what()} << logging::endl;
+        } catch (...) {
+            logging::err("InfluxModule") << "Unhandled error when trying to flush data to Influx" << logging::endl;
+        }
     }
 }
 

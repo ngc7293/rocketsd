@@ -3,10 +3,19 @@
         {
             "id": "serial",
             "module": "serial",
-            "port": "/dev/pts/4",
+            "port": "/dev/pts/5",
             "baudrate": 115200,
             "protocol": "protocol.xml",
-            "broadcast": ["cute"]
+            "broadcast": ["cute", "influx"]
+        },
+        {
+            "id": "influx",
+            "module": "influx",
+            "host": "http://localhost:8086",
+            "org_id": "f16db33158c03f29",
+            "bucket_id": "9370d25884b08538",
+            "token": "s_xwqbkPDuMSHQCaCPOLZVgdrFW8Y_QO9lSZYX1Gned3KvD-xVCjkuzQZix6AqJR_kD8slJjleOFWa59uK4lMw==",
+            "buffer_size": 1000
         },
         {
             "id": "cute",
