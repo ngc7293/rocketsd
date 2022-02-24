@@ -13,7 +13,7 @@ class InfluxModule : public Module {
     Q_OBJECT
 
 private:
-    std::unique_ptr<influx::Bucket> bucket_;
+    influx::Bucket bucket_;
     std::size_t bufferSize_;
 
 public:
