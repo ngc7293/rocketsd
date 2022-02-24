@@ -15,12 +15,7 @@ namespace rocketsd::modules {
 namespace {
     std::string isodate()
     {
-        std::string s = "YYYY-MM-DD HH:MM:SS";
-        std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-        struct tm now_tm;
-        localtime_s(&now_tm, &now);
-        strftime(s.data(), s.size() + 1, "%F %T", &now_tm);
-        return s;
+        return util::time::to_string(std::chrono::system_clock::now(), "%F %T");
     }
 }
 
