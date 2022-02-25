@@ -37,7 +37,7 @@ test:
 
   script:
     - cd build
-    - ctest --rerun-failed --output-on-failure --output-junit report.xml
+    - LD_LIBRARY_PATH=$(pwd)/lib ctest --rerun-failed --output-on-failure --output-junit report.xml
 
   artifacts:
     expire_in: 30 days
