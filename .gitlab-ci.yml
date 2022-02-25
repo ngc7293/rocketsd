@@ -1,0 +1,45 @@
+image: ghcr.io/ngc7293/cxxci
+
+build:
+  stage: build
+
+  before_script:
+    # Submodules
+    - echo -e "\e[0Ksection_start:`date +%s`:submodule_section\r\e[0KGit submodule clone"
+    - sed 's#git@github.com:#https://github.com/#g' -i .gitmodules
+    - git submodule update --init --recursive
+    - echo -e "\e[0Ksection_end:`date +%s`:submodule_section\r\e[0K"
+
+    # Conan
+    - echo -e "\e[0Ksection_start:`date +%s`:conan_section\r\e[0KConan third party install"
+    - conan config set general.revisions_enabled=1
+    - conan remote add davidbourgault https://artifactory.davidbourgault.ca/artifactory/api/conan/conan
+    - mkdir build; cd build
+    - conan install .. --update --build=missing -s compiler.version=10 -s compiler.libcxx=libstdc++11 -s build_type=Release -r davidbourgault
+    - echo -e "\e[0Ksection_end:`date +%s`:conan_section\r\e[0K"
+
+  script:
+    - CXX=g++-10 CC=gcc-10 cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
+    - cmake --build . --config Release --parallel 2
+
+  artifacts:
+    paths:
+      - build/bin
+      - build/lib/*.so*
+      - build/**/*.cmake
+      - build/CMakeCache.txt
+    expire_in: 30 days
+
+test:
+  stage: test
+  dependencies:
+    - build
+
+  script:
+    - cd build
+    - LD_LIBRARY_PATH=$(pwd)/lib ctest --rerun-failed --output-on-failure --output-junit report.xml
+
+  artifacts:
+    expire_in: 30 days
+    reports:
+      junit: build/report.xml
