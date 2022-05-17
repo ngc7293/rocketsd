@@ -59,7 +59,7 @@ bool CuteModule::init(json& config)
     }
 
     if (config.count("commands") && config["commands"].is_array()) {
-        for (const auto subconfig: config["commands"]) {
+        for (const auto& subconfig: config["commands"]) {
             if (!subconfig.is_object()) {
                 logging::err("CuteModule") << "Invalid JSON type for command configuration: ignoring" << logging::endl;
                 continue;

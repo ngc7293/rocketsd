@@ -1,10 +1,11 @@
 [requires]
-qt/5.15.2
+qt/6.2.4
 protobuf/3.17.1
 nlohmann_json/3.10.4
 gtest/1.11.0
 libcurl/7.80.0
-openssl/1.1.1m
+openssl/1.1.1n
+zlib/1.2.12
 
 [options]
 qt:gui=False

@@ -38,7 +38,7 @@ bool InfluxModule::init(json& config)
         util::json::required(org, "org_id"),
         util::json::required(token, "token"),
         util::json::required(bufferSize_, "buffer_size"),
-        util::json::optional(bucket, "bucket_id", "")
+        util::json::optional(bucket, "bucket", "")
     )) {
         return false;
     }
@@ -48,7 +48,7 @@ bool InfluxModule::init(json& config)
     if (bucket.empty()) {
         bucket_ = db.CreateBucket("rocketsd-" + isodate(), std::chrono::years(1));
     } else {
-        bucket_ = db.GetBucket(bucket);
+        bucket_ = db.GetBucketByName(bucket);
     }
 
     logging::info("InfluxModule") << "Successfully init'd InfluxStation client" << logging::tag{"id", id()} << logging::endl;
