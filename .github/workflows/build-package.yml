@@ -52,6 +52,9 @@ jobs:
       - name: Install Third Parties (Ubuntu)
         if: matrix.config.os == 'ubuntu-20.04'
         working-directory: build
+        env:
+          CC: ${{ matrix.config.cc }}
+          CXX: ${{ matrix.config.cxx }}
         run: conan install .. --build=missing --update -s compiler.version=10 -s compiler.libcxx=libstdc++11 -s build_type=${{ matrix.config.build_type }} -r davidbourgault
 
       - name: Install Third Parties (Windows)
