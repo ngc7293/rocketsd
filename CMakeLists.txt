@@ -111,7 +111,7 @@ function(target_standard_compile_flags TARGET)
     target_os_compile_options(
         TARGET ${TARGET}
         LINUX -Wall -Werror -Wpedantic -Wno-unknown-pragmas
-        WINDOWS /W4 /WX /wd4068
+        WINDOWS /W4 /WX /wd4068;4127
     )
 
     if (CMAKE_BUILD_TYPE STREQUAL Debug)
