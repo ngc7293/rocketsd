@@ -4,7 +4,7 @@ protobuf/3.17.1
 nlohmann_json/3.10.4
 gtest/1.11.0
 libcurl/7.80.0
-openssl/1.1.1n
+openssl/1.1.1o
 zlib/1.2.12
 
 [options]
