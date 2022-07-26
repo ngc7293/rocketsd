@@ -43,12 +43,20 @@ bool InfluxModule::init(json& config)
         return false;
     }
 
-    auto db = influx::Influx(host, org, token);
+    try {
+        auto db = influx::Influx(host, org, token);
 
-    if (bucket.empty()) {
-        bucket_ = db.CreateBucket("rocketsd-" + isodate(), std::chrono::years(1));
-    } else {
-        bucket_ = db.GetBucketByName(bucket);
+        if (bucket.empty()) {
+            bucket_ = db.CreateBucket("rocketsd-" + isodate(), std::chrono::years(1));
+        } else {
+            bucket_ = db.GetBucketByName(bucket);
+        }
+    } catch (const influx::InfluxRemoteError& e) {
+        logging::err("InfluxModule") << "Failed when contacting InfluxDB" << logging::tag{"host", host} << logging::tag{"code", e.statusCode()} << logging::tag{"response", e.what()} << logging::endl;
+        return false;
+    } catch (const influx::InfluxError& e) {
+        logging::err("InfluxModule") << "Failed to initialize module: " << e.what() << logging::endl;
+        return false;
     }
 
     logging::info("InfluxModule") << "Successfully init'd InfluxStation client" << logging::tag{"id", id()} << logging::endl;
