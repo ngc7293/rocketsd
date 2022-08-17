@@ -1,4 +1,4 @@
-image: ghcr.io/ngc7293/cxxci
+image: ghcr.io/ngc7293/cxxci:focal
 
 build:
   stage: build

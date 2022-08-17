@@ -1,5 +1,6 @@
 #include "name.hh"
 
+#include <algorithm>
 #include <sstream>
 
 namespace rocketsd::protocol {
