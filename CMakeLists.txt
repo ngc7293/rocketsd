@@ -20,6 +20,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # GTest
 find_package(GTest)
+find_package(Protobuf)
 enable_testing()
 
 # Installation stuff
