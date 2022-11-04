@@ -66,7 +66,7 @@ function(install_qt)
 
     if(UNIX)
         foreach(QTLIB ${INSTALL_QT_LIBS} ${INSTALL_QT_LIBS_LINUX})
-            install_lib_with_rpath(FILES ${CMAKE_BINARY_DIR}/lib/libQt6${QTLIB}.so.6.2.4 ${CMAKE_BINARY_DIR}/lib/libQt6${QTLIB}.so.6 DESTINATION lib RPATH "\$ORIGIN")
+            install_lib_with_rpath(FILES ${CMAKE_BINARY_DIR}/lib/libQt6${QTLIB}.so.6.3.1 ${CMAKE_BINARY_DIR}/lib/libQt6${QTLIB}.so.6 DESTINATION lib RPATH "\$ORIGIN")
         endforeach()
     
         if(INSTALL_QT_PLATFORM)
