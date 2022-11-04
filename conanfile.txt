@@ -1,5 +1,6 @@
 [requires]
-qt/6.2.4
+qt/6.3.1
+dbus/1.15.2
 protobuf/3.17.1
 nlohmann_json/3.10.4
 gtest/1.11.0
